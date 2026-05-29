@@ -80,23 +80,18 @@ select.select-locked optgroup:not([disabled]) option {
 }
 
 .units-block {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
   padding: 0.85rem;
   border-radius: 0.75rem;
   background: var(--bg);
   border: 1px dashed var(--border);
 }
 
-.units-row {
-  flex-wrap: wrap;
-}
-
-.result-row {
-  flex-wrap: wrap;
-  align-items: flex-end;
-  min-height: 2.25rem;
+.units-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  column-gap: 0.75rem;
+  row-gap: 0.5rem;
+  align-items: end;
 }
 
 .result-cell {
@@ -118,13 +113,17 @@ select.select-locked optgroup:not([disabled]) option {
   line-height: 1.2;
 }
 
-.swap-spacer {
-  flex-shrink: 0;
-  width: 2.75rem;
+.result-equals {
+  justify-self: center;
+  align-self: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--muted);
+  line-height: 1;
 }
 
 .result-full {
-  flex: 1 1 100%;
+  grid-column: 1 / -1;
   margin: 0;
   text-align: center;
 }
@@ -134,10 +133,6 @@ select.select-locked optgroup:not([disabled]) option {
   flex-direction: column;
   gap: 0.35rem;
   min-width: 0;
-}
-
-.field.grow {
-  flex: 1 1 140px;
 }
 
 .label {
@@ -199,8 +194,6 @@ select:focus,
   color: var(--accent);
   font-size: 1.25rem;
   cursor: pointer;
-  align-self: flex-end;
-  margin-bottom: 0.1rem;
   transition:
     transform 0.15s,
     background 0.15s;

@@ -61,7 +61,7 @@ function App() {
 
   const fromUnit = getUnit(fromId)
   const toUnit = getUnit(toId)
-  const activeCategory = fromUnit?.category ?? toUnit?.category
+  const activeCategory = fromUnit?.category
 
   const unhingedTotal = useMemo(
     () => UNITS.filter((u) => u.weird).length,
@@ -106,18 +106,11 @@ function App() {
     [toId],
   )
 
-  const setTo = useCallback(
-    (id: string) => {
-      const next = getUnit(id)
-      if (!next) return
-      setToId(id)
-      const from = getUnit(fromId)
-      if (from && from.category !== next.category) {
-        setFromId(firstInCategory(next.category, id))
-      }
-    },
-    [fromId],
-  )
+  const setTo = useCallback((id: string) => {
+    const next = getUnit(id)
+    if (!next) return
+    setToId(id)
+  }, [])
 
   const renderUnitSelect = (
     value: string,
@@ -161,9 +154,7 @@ function App() {
   const swap = () => {
     setFromId(toId)
     setToId(fromId)
-    if (result !== null && !Number.isNaN(parsed) && parsed !== 0) {
-      setInput(String(result))
-    }
+    setInput('1')
   }
 
   const randomize = useCallback(() => {
@@ -217,10 +208,10 @@ function App() {
         </label>
 
         <div className="units-block">
-          <div className="row units-row">
-            <label className="field grow">
+          <div className="units-grid">
+            <label className="field">
               <span className="label">From</span>
-              {renderUnitSelect(fromId, setFrom, toUnit?.category)}
+              {renderUnitSelect(fromId, setFrom, undefined)}
             </label>
 
             <button
@@ -233,13 +224,11 @@ function App() {
               ⇄
             </button>
 
-            <label className="field grow">
+            <label className="field">
               <span className="label">To</span>
               {renderUnitSelect(toId, setTo, fromUnit?.category)}
             </label>
-          </div>
 
-          <output className="row result-row" aria-live="polite">
             {mismatch ? (
               <p className="result-muted result-full">
                 Pick two units of the same kind — length with length, mass with
@@ -247,31 +236,31 @@ function App() {
               </p>
             ) : result !== null && fromUnit && toUnit && !Number.isNaN(parsed) ? (
               <>
-                <div className="result-cell grow">
-                  <span className="result-number">
-                    {formatNumber(parsed)}
-                  </span>
+                <output className="result-cell" aria-live="polite">
+                  <span className="result-number">{formatNumber(parsed)}</span>
                   <span className="result-unit">{fromUnit.short}</span>
-                </div>
-                <div className="swap-spacer" aria-hidden="true" />
-                <div className="result-cell grow">
+                </output>
+                <span className="result-equals" aria-hidden="true">
+                  =
+                </span>
+                <output className="result-cell" aria-live="polite">
                   <span className="result-number">{formatNumber(result)}</span>
                   <span className="result-unit">{toUnit.short}</span>
-                </div>
+                </output>
               </>
             ) : (
               <p className="result-muted result-full">
                 Enter a number to convert
               </p>
             )}
-          </output>
+          </div>
         </div>
 
         {activeCategory && (
           <p className="dimension-hint">
             Converting within{' '}
             <strong>{CATEGORY_LABELS[activeCategory]}</strong>
-            {lockHint(fromUnit, toUnit)}
+            {' — other dimensions faded in “To”'}
           </p>
         )}
 
@@ -292,12 +281,6 @@ function App() {
       </footer>
     </div>
   )
-}
-
-function lockHint(from: Unit | undefined, to: Unit | undefined): string {
-  if (from && !to) return ' — other dimensions faded in “To”'
-  if (to && !from) return ' — other dimensions faded in “From”'
-  return ''
 }
 
 export default App
