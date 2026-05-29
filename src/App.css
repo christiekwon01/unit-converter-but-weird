@@ -79,8 +79,54 @@ select.select-locked optgroup:not([disabled]) option {
   align-items: flex-end;
 }
 
+.units-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem;
+  border-radius: 0.75rem;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+}
+
 .units-row {
   flex-wrap: wrap;
+}
+
+.result-row {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  min-height: 2.25rem;
+}
+
+.result-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.result-number {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent-2);
+  line-height: 1.2;
+}
+
+.result-unit {
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.swap-spacer {
+  flex-shrink: 0;
+  width: 2.75rem;
+}
+
+.result-full {
+  flex: 1 1 100%;
+  margin: 0;
+  text-align: center;
 }
 
 .field {
@@ -163,30 +209,6 @@ select:focus,
 .swap:hover {
   transform: rotate(180deg);
   background: var(--accent-dim);
-}
-
-.result {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  background: var(--bg);
-  border: 1px dashed var(--border);
-  min-height: 4.5rem;
-  justify-content: center;
-}
-
-.result-value {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--accent-2);
-  line-height: 1.2;
-}
-
-.result-equals {
-  font-size: 0.85rem;
-  color: var(--muted);
 }
 
 .result-muted {

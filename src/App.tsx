@@ -7,7 +7,7 @@ import {
   UNITS,
   type Unit,
 } from './units'
-import { convert, defaultPair, formatResult } from './convert'
+import { convert, defaultPair, formatNumber } from './convert'
 import './App.css'
 
 const INITIAL = defaultPair('length')
@@ -216,26 +216,55 @@ function App() {
           />
         </label>
 
-        <div className="row units-row">
-          <label className="field grow">
-            <span className="label">From</span>
-            {renderUnitSelect(fromId, setFrom, toUnit?.category)}
-          </label>
+        <div className="units-block">
+          <div className="row units-row">
+            <label className="field grow">
+              <span className="label">From</span>
+              {renderUnitSelect(fromId, setFrom, toUnit?.category)}
+            </label>
 
-          <button
-            type="button"
-            className="swap"
-            onClick={swap}
-            title="Swap units"
-            aria-label="Swap from and to units"
-          >
-            ⇄
-          </button>
+            <button
+              type="button"
+              className="swap"
+              onClick={swap}
+              title="Swap units"
+              aria-label="Swap from and to units"
+            >
+              ⇄
+            </button>
 
-          <label className="field grow">
-            <span className="label">To</span>
-            {renderUnitSelect(toId, setTo, fromUnit?.category)}
-          </label>
+            <label className="field grow">
+              <span className="label">To</span>
+              {renderUnitSelect(toId, setTo, fromUnit?.category)}
+            </label>
+          </div>
+
+          <output className="row result-row" aria-live="polite">
+            {mismatch ? (
+              <p className="result-muted result-full">
+                Pick two units of the same kind — length with length, mass with
+                mass, and so on.
+              </p>
+            ) : result !== null && fromUnit && toUnit && !Number.isNaN(parsed) ? (
+              <>
+                <div className="result-cell grow">
+                  <span className="result-number">
+                    {formatNumber(parsed)}
+                  </span>
+                  <span className="result-unit">{fromUnit.short}</span>
+                </div>
+                <div className="swap-spacer" aria-hidden="true" />
+                <div className="result-cell grow">
+                  <span className="result-number">{formatNumber(result)}</span>
+                  <span className="result-unit">{toUnit.short}</span>
+                </div>
+              </>
+            ) : (
+              <p className="result-muted result-full">
+                Enter a number to convert
+              </p>
+            )}
+          </output>
         </div>
 
         {activeCategory && (
@@ -245,28 +274,6 @@ function App() {
             {lockHint(fromUnit, toUnit)}
           </p>
         )}
-
-        <output className="result" aria-live="polite">
-          {mismatch ? (
-            <span className="result-muted">
-              Pick two units of the same kind — length with length, mass with
-              mass, and so on.
-            </span>
-          ) : result !== null && toUnit ? (
-            <>
-              <span className="result-value">
-                {formatResult(result, toUnit)}
-              </span>
-              {fromUnit && !Number.isNaN(parsed) && (
-                <span className="result-equals">
-                  {parsed} {fromUnit.short} =
-                </span>
-              )}
-            </>
-          ) : (
-            <span className="result-muted">Enter a number to convert</span>
-          )}
-        </output>
 
         {blurb && <p className="blurb">{blurb}</p>}
       </section>

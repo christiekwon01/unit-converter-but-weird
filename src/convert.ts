@@ -25,7 +25,7 @@ export function convert(
   return base / to.toBase
 }
 
-export function formatResult(value: number, unit: Unit): string {
+export function formatNumber(value: number): string {
   if (!Number.isFinite(value)) return '—'
 
   const abs = Math.abs(value)
@@ -36,12 +36,14 @@ export function formatResult(value: number, unit: Unit): string {
   else if (abs >= 0.01) digits = 6
   else digits = 8
 
-  const formatted = new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-US', {
     maximumFractionDigits: digits,
     minimumFractionDigits: 0,
   }).format(value)
+}
 
-  return `${formatted} ${unit.short}`
+export function formatResult(value: number, unit: Unit): string {
+  return `${formatNumber(value)} ${unit.short}`
 }
 
 export function defaultPair(category: Category): { from: string; to: string } {
