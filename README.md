@@ -23,7 +23,7 @@ npm run preview
 ## Features
 
 - **Everyday units** — meters, kg, liters, °C/°F/K
-- **Unhinged units** — capybaras, Eiffel Towers, blue whales, Olympic pools, etc.
+- **300+ unhinged units** — animals, food, landmarks, vehicles, dinosaurs, and more (with search)
 - **Quick presets** — one-click absurd conversions
 - **Category tabs** — length, mass, volume, temperature
 

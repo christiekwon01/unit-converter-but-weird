@@ -1,40 +1,162 @@
 import { useCallback, useMemo, useState } from 'react'
 import {
+  CATEGORIES,
   CATEGORY_LABELS,
   type Category,
   getUnit,
-  PRESETS,
-  unitsForCategory,
+  UNITS,
+  type Unit,
 } from './units'
 import { convert, defaultPair, formatResult } from './convert'
 import './App.css'
 
+const INITIAL = defaultPair('length')
+
+function matchesFilter(unit: Unit, query: string): boolean {
+  if (!query) return true
+  const q = query.toLowerCase()
+  return (
+    unit.label.toLowerCase().includes(q) ||
+    unit.id.replace(/-/g, ' ').includes(q)
+  )
+}
+
+function firstInCategory(category: Category, excludeId?: string): string {
+  const unit = UNITS.find(
+    (u) => u.category === category && u.id !== excludeId,
+  )
+  return unit?.id ?? UNITS.find((u) => u.category === category)!.id
+}
+
+function randomValueForCategory(category: Category): number {
+  switch (category) {
+    case 'length':
+      return Number((Math.random() * 5000 + 0.5).toFixed(2))
+    case 'mass':
+      return Number((Math.random() * 2000 + 0.1).toFixed(2))
+    case 'volume':
+      return Number((Math.random() * 3000 + 0.1).toFixed(2))
+    case 'temperature':
+      return Number((Math.random() * 350 - 100).toFixed(1))
+    default:
+      return 1
+  }
+}
+
+function pickTwoDistinct(units: Unit[]): [Unit, Unit] | null {
+  if (units.length < 2) return null
+  const firstIdx = Math.floor(Math.random() * units.length)
+  let secondIdx = Math.floor(Math.random() * units.length)
+  while (secondIdx === firstIdx) {
+    secondIdx = Math.floor(Math.random() * units.length)
+  }
+  return [units[firstIdx], units[secondIdx]]
+}
+
 function App() {
-  const [category, setCategory] = useState<Category>('length')
-  const defaults = defaultPair(category)
-  const [fromId, setFromId] = useState(defaults.from)
-  const [toId, setToId] = useState(defaults.to)
+  const [fromId, setFromId] = useState(INITIAL.from)
+  const [toId, setToId] = useState(INITIAL.to)
   const [input, setInput] = useState('1')
+  const [unitFilter, setUnitFilter] = useState('')
 
-  const units = useMemo(() => unitsForCategory(category), [category])
-  const everyday = units.filter((u) => !u.weird)
-  const weird = units.filter((u) => u.weird)
-
-  const parsed = parseFloat(input)
   const fromUnit = getUnit(fromId)
   const toUnit = getUnit(toId)
+  const activeCategory = fromUnit?.category ?? toUnit?.category
+
+  const unhingedTotal = useMemo(
+    () => UNITS.filter((u) => u.weird).length,
+    [],
+  )
+
+  const unitsByCategory = useMemo(() => {
+    const q = unitFilter.trim()
+    const map = new Map<
+      Category,
+      { everyday: Unit[]; weird: Unit[] }
+    >()
+    for (const cat of CATEGORIES) {
+      const inCat = UNITS.filter((u) => u.category === cat)
+      const everyday = inCat.filter((u) => !u.weird && matchesFilter(u, q))
+      const weird = inCat.filter((u) => u.weird && matchesFilter(u, q))
+      map.set(cat, { everyday, weird })
+    }
+    return map
+  }, [unitFilter])
+
+  const parsed = parseFloat(input)
   const result =
-    fromUnit && toUnit && input.trim() !== '' && !Number.isNaN(parsed)
+    fromUnit &&
+    toUnit &&
+    fromUnit.category === toUnit.category &&
+    input.trim() !== '' &&
+    !Number.isNaN(parsed)
       ? convert(parsed, fromId, toId)
       : null
 
-  const handleCategory = useCallback((next: Category) => {
-    setCategory(next)
-    const pair = defaultPair(next)
-    setFromId(pair.from)
-    setToId(pair.to)
-    setInput('1')
-  }, [])
+  const setFrom = useCallback(
+    (id: string) => {
+      const next = getUnit(id)
+      if (!next) return
+      setFromId(id)
+      const to = getUnit(toId)
+      if (to && to.category !== next.category) {
+        setToId(firstInCategory(next.category, id))
+      }
+    },
+    [toId],
+  )
+
+  const setTo = useCallback(
+    (id: string) => {
+      const next = getUnit(id)
+      if (!next) return
+      setToId(id)
+      const from = getUnit(fromId)
+      if (from && from.category !== next.category) {
+        setFromId(firstInCategory(next.category, id))
+      }
+    },
+    [fromId],
+  )
+
+  const renderUnitSelect = (
+    value: string,
+    onChange: (id: string) => void,
+    lockCategory: Category | undefined,
+  ) => (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={lockCategory ? 'select-locked' : undefined}
+    >
+      {CATEGORIES.map((cat) => {
+        const { everyday, weird } = unitsByCategory.get(cat)!
+        if (everyday.length === 0 && weird.length === 0) return null
+        const incompatible = lockCategory !== undefined && lockCategory !== cat
+        const groupLabel = CATEGORY_LABELS[cat]
+
+        return (
+          <optgroup
+            key={cat}
+            label={groupLabel}
+            disabled={incompatible}
+            className={incompatible ? 'optgroup-incompatible' : undefined}
+          >
+            {everyday.map((u) => (
+              <option key={u.id} value={u.id} disabled={incompatible}>
+                {u.label}
+              </option>
+            ))}
+            {weird.map((u) => (
+              <option key={u.id} value={u.id} disabled={incompatible}>
+                {u.label}
+              </option>
+            ))}
+          </optgroup>
+        )
+      })}
+    </select>
+  )
 
   const swap = () => {
     setFromId(toId)
@@ -44,16 +166,22 @@ function App() {
     }
   }
 
-  const applyPreset = (preset: (typeof PRESETS)[number]) => {
-    const from = getUnit(preset.fromId)
-    if (!from) return
-    setCategory(from.category)
-    setFromId(preset.fromId)
-    setToId(preset.toId)
-    setInput(String(preset.value))
-  }
+  const randomize = useCallback(() => {
+    const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)]
+    const units = UNITS.filter((u) => u.category === category)
+    const pair = pickTwoDistinct(units)
+    if (!pair) return
+    const [from, to] = pair
+
+    setFromId(from.id)
+    setToId(to.id)
+    setInput(String(randomValueForCategory(category)))
+    setUnitFilter('')
+  }, [])
 
   const blurb = fromUnit?.blurb ?? toUnit?.blurb
+  const mismatch =
+    fromUnit && toUnit && fromUnit.category !== toUnit.category
 
   return (
     <div className="app">
@@ -61,19 +189,6 @@ function App() {
         <h1>Scale of Things</h1>
         <p className="tagline">Measure anything in anything.</p>
       </header>
-
-      <nav className="tabs" aria-label="Conversion category">
-        {(Object.keys(CATEGORY_LABELS) as Category[]).map((key) => (
-          <button
-            key={key}
-            type="button"
-            className={category === key ? 'tab active' : 'tab'}
-            onClick={() => handleCategory(key)}
-          >
-            {CATEGORY_LABELS[key]}
-          </button>
-        ))}
-      </nav>
 
       <section className="converter card" aria-label="Unit converter">
         <div className="row">
@@ -90,27 +205,21 @@ function App() {
           </label>
         </div>
 
+        <label className="field unit-search">
+          <span className="label">Search unhinged ({unhingedTotal})</span>
+          <input
+            type="search"
+            value={unitFilter}
+            onChange={(e) => setUnitFilter(e.target.value)}
+            placeholder="capybara, pizza, moon…"
+            className="unit-search-input"
+          />
+        </label>
+
         <div className="row units-row">
           <label className="field grow">
             <span className="label">From</span>
-            <select value={fromId} onChange={(e) => setFromId(e.target.value)}>
-              <optgroup label="Everyday">
-                {everyday.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.label} ({u.short})
-                  </option>
-                ))}
-              </optgroup>
-              {weird.length > 0 && (
-                <optgroup label="Unhinged">
-                  {weird.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.label} ({u.short})
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
+            {renderUnitSelect(fromId, setFrom, toUnit?.category)}
           </label>
 
           <button
@@ -125,29 +234,25 @@ function App() {
 
           <label className="field grow">
             <span className="label">To</span>
-            <select value={toId} onChange={(e) => setToId(e.target.value)}>
-              <optgroup label="Everyday">
-                {everyday.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.label} ({u.short})
-                  </option>
-                ))}
-              </optgroup>
-              {weird.length > 0 && (
-                <optgroup label="Unhinged">
-                  {weird.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.label} ({u.short})
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
+            {renderUnitSelect(toId, setTo, fromUnit?.category)}
           </label>
         </div>
 
+        {activeCategory && (
+          <p className="dimension-hint">
+            Converting within{' '}
+            <strong>{CATEGORY_LABELS[activeCategory]}</strong>
+            {lockHint(fromUnit, toUnit)}
+          </p>
+        )}
+
         <output className="result" aria-live="polite">
-          {result !== null && toUnit ? (
+          {mismatch ? (
+            <span className="result-muted">
+              Pick two units of the same kind — length with length, mass with
+              mass, and so on.
+            </span>
+          ) : result !== null && toUnit ? (
             <>
               <span className="result-value">
                 {formatResult(result, toUnit)}
@@ -166,21 +271,10 @@ function App() {
         {blurb && <p className="blurb">{blurb}</p>}
       </section>
 
-      <section className="presets card" aria-label="Quick conversions">
-        <h2>Try something unhinged</h2>
-        <ul className="preset-list">
-          {PRESETS.map((preset) => (
-            <li key={preset.label}>
-              <button
-                type="button"
-                className="preset-btn"
-                onClick={() => applyPreset(preset)}
-              >
-                {preset.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+      <section className="presets card" aria-label="Random conversion">
+        <button type="button" className="randomize-btn" onClick={randomize}>
+          Randomize conversion
+        </button>
       </section>
 
       <footer className="footer">
@@ -191,6 +285,12 @@ function App() {
       </footer>
     </div>
   )
+}
+
+function lockHint(from: Unit | undefined, to: Unit | undefined): string {
+  if (from && !to) return ' — other dimensions faded in “To”'
+  if (to && !from) return ' — other dimensions faded in “From”'
+  return ''
 }
 
 export default App
