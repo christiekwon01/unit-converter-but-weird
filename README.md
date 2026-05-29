@@ -1,6 +1,8 @@
-# Unit Converter But Weird
+# Scale of Things
 
-Normal conversions **and** absurd ones — *how many capybaras tall is the Eiffel Tower?*
+**Measure anything in anything.**
+
+Everyday units and absurd ones — *how many capybaras tall is the Eiffel Tower?*
 
 ## Run locally
 
@@ -22,7 +24,11 @@ npm run preview
 
 - **Everyday units** — meters, kg, liters, °C/°F/K
 - **Unhinged units** — capybaras, Eiffel Towers, blue whales, Olympic pools, etc.
-- **Quick presets** — one-click examples from the project brief
+- **Quick presets** — one-click absurd conversions
 - **Category tabs** — length, mass, volume, temperature
 
 Weird units use approximate real-world averages (documented in tooltips). Great for trivia; do not use for bridge engineering.
+
+## Live
+
+https://scaleofthings.vercel.app

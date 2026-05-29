@@ -58,12 +58,8 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <p className="eyebrow">Project #33 · name TBC</p>
-        <h1>Unit Converter But Weird</h1>
-        <p className="tagline">
-          Normal conversions <em>and</em> absurd ones — how many capybaras tall is
-          the Eiffel Tower?
-        </p>
+        <h1>Scale of Things</h1>
+        <p className="tagline">Measure anything in anything.</p>
       </header>
 
       <nav className="tabs" aria-label="Conversion category">

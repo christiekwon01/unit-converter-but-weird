@@ -35,11 +35,6 @@
   line-height: 1.5;
 }
 
-.tagline em {
-  font-style: normal;
-  color: var(--accent);
-  font-weight: 600;
-}
 
 .tabs {
   display: flex;
