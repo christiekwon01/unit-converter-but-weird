@@ -8,6 +8,7 @@ import {
   type Unit,
 } from './units'
 import { convert, defaultPair, formatNumber } from './convert'
+import { getFunFact } from './funFacts'
 import './App.css'
 
 const INITIAL = defaultPair('length')
@@ -61,8 +62,6 @@ function App() {
 
   const fromUnit = getUnit(fromId)
   const toUnit = getUnit(toId)
-  const activeCategory = fromUnit?.category
-
   const unhingedTotal = useMemo(
     () => UNITS.filter((u) => u.weird).length,
     [],
@@ -170,13 +169,16 @@ function App() {
     setUnitFilter('')
   }, [])
 
-  const blurb = fromUnit?.blurb ?? toUnit?.blurb
+  const funFact = getFunFact(fromUnit, toUnit, parsed, result)
   const mismatch =
     fromUnit && toUnit && fromUnit.category !== toUnit.category
 
   return (
     <div className="app">
       <header className="header">
+        <span className="header-emoji" aria-hidden="true">
+          🦫📏🍕
+        </span>
         <h1>Scale of Things</h1>
         <p className="tagline">Measure anything in anything.</p>
       </header>
@@ -197,7 +199,7 @@ function App() {
         </div>
 
         <label className="field unit-search">
-          <span className="label">Search unhinged ({unhingedTotal})</span>
+          <span className="label">Find something weird ({unhingedTotal})</span>
           <input
             type="search"
             value={unitFilter}
@@ -236,14 +238,14 @@ function App() {
               </p>
             ) : result !== null && fromUnit && toUnit && !Number.isNaN(parsed) ? (
               <>
-                <output className="result-cell" aria-live="polite">
+                <output className="result-cell result-cell-from" aria-live="polite">
                   <span className="result-number">{formatNumber(parsed)}</span>
                   <span className="result-unit">{fromUnit.short}</span>
                 </output>
                 <span className="result-equals" aria-hidden="true">
                   =
                 </span>
-                <output className="result-cell" aria-live="polite">
+                <output className="result-cell result-cell-to" aria-live="polite">
                   <span className="result-number">{formatNumber(result)}</span>
                   <span className="result-unit">{toUnit.short}</span>
                 </output>
@@ -256,27 +258,24 @@ function App() {
           </div>
         </div>
 
-        {activeCategory && (
-          <p className="dimension-hint">
-            Converting within{' '}
-            <strong>{CATEGORY_LABELS[activeCategory]}</strong>
-            {' — other dimensions faded in “To”'}
+        {funFact && !mismatch && (
+          <p className="fun-fact">
+            <span className="fun-fact-label">✨ Fun fact</span>
+            {funFact}
           </p>
         )}
-
-        {blurb && <p className="blurb">{blurb}</p>}
       </section>
 
       <section className="presets card" aria-label="Random conversion">
         <button type="button" className="randomize-btn" onClick={randomize}>
-          Randomize conversion
+          🎲 Surprise me
         </button>
       </section>
 
       <footer className="footer">
         <p>
-          All “weird” units use lovingly approximate real-world averages. Perfect
-          for trivia, terrible for engineering.
+          Weird units = lovingly approximate averages. Great for trivia, terrible
+          for bridge engineering.
         </p>
       </footer>
     </div>
