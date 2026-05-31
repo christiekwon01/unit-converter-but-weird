@@ -8,7 +8,6 @@ import {
   type Unit,
 } from './units'
 import { convert, defaultPair, formatNumber } from './convert'
-import { getFunFact } from './funFacts'
 import './App.css'
 
 const INITIAL = defaultPair('length')
@@ -169,7 +168,6 @@ function App() {
     setUnitFilter('')
   }, [])
 
-  const funFact = getFunFact(fromUnit, toUnit, parsed, result)
   const mismatch =
     fromUnit && toUnit && fromUnit.category !== toUnit.category
 
@@ -258,12 +256,6 @@ function App() {
           </div>
         </div>
 
-        {funFact && !mismatch && (
-          <p className="fun-fact">
-            <span className="fun-fact-label">✨ Fun fact</span>
-            {funFact}
-          </p>
-        )}
       </section>
 
       <section className="presets card" aria-label="Random conversion">

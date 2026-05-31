@@ -68,26 +68,6 @@
   align-items: flex-end;
 }
 
-.fun-fact {
-  margin: 0;
-  padding: 0.85rem 1rem;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, #fef9c3 0%, #fce7f3 100%);
-  border: 2px solid #fde68a;
-  font-size: 0.9rem;
-  color: #78350f;
-  text-align: center;
-  line-height: 1.55;
-}
-
-.fun-fact-label {
-  display: inline-block;
-  font-family: 'Fredoka', sans-serif;
-  font-weight: 600;
-  color: #c026d3;
-  margin-right: 0.35rem;
-}
-
 select option:disabled,
 select optgroup[disabled] {
   color: var(--muted);
@@ -279,7 +259,7 @@ select:focus,
 
 .footer p {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.62rem;
   color: var(--muted);
   font-weight: 600;
   line-height: 1.5;
